@@ -1,0 +1,706 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luau Code Obfuscator - Advanced Roblox Script Protection</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                borderRadius: {
+                    lg: "var(--radius)",
+                    md: "calc(var(--radius) - 2px)",
+                    sm: "calc(var(--radius) - 4px)",
+                },
+                colors: {
+                    background: "var(--background)",
+                    foreground: "var(--foreground)",
+                    card: {
+                        DEFAULT: "var(--card)",
+                        foreground: "var(--card-foreground)",
+                    },
+                    popover: {
+                        DEFAULT: "var(--popover)",
+                        foreground: "var(--popover-foreground)",
+                    },
+                    primary: {
+                        DEFAULT: "var(--primary)",
+                        foreground: "var(--primary-foreground)",
+                    },
+                    secondary: {
+                        DEFAULT: "var(--secondary)",
+                        foreground: "var(--secondary-foreground)",
+                    },
+                    muted: {
+                        DEFAULT: "var(--muted)",
+                        foreground: "var(--muted-foreground)",
+                    },
+                    accent: {
+                        DEFAULT: "var(--accent)",
+                        foreground: "var(--accent-foreground)",
+                    },
+                    destructive: {
+                        DEFAULT: "var(--destructive)",
+                        foreground: "var(--destructive-foreground)",
+                    },
+                    border: "var(--border)",
+                    input: "var(--input)",
+                    ring: "var(--ring)",
+                },
+                fontFamily: {
+                    sans: ["Inter", "system-ui", "sans-serif"],
+                    mono: ["JetBrains Mono", "monospace"],
+                }
+            },
+        }
+    };
+    </script>
+    <style>
+        :root {
+            --background: hsl(222 84% 5%);
+            --foreground: hsl(210 40% 98%);
+            --card: hsl(217 33% 17%);
+            --card-foreground: hsl(210 40% 98%);
+            --popover: hsl(217 33% 17%);
+            --popover-foreground: hsl(210 40% 98%);
+            --primary: hsl(262 83% 68%);
+            --primary-foreground: hsl(210 40% 98%);
+            --secondary: hsl(217 33% 17%);
+            --secondary-foreground: hsl(210 40% 98%);
+            --muted: hsl(217 33% 17%);
+            --muted-foreground: hsl(215 20% 65%);
+            --accent: hsl(217 33% 17%);
+            --accent-foreground: hsl(210 40% 98%);
+            --destructive: hsl(0 62% 30%);
+            --destructive-foreground: hsl(210 40% 98%);
+            --border: hsl(217 33% 17%);
+            --input: hsl(217 33% 17%);
+            --ring: hsl(262 83% 68%);
+            --radius: 0.75rem;
+        }
+        
+        .code-editor {
+            font-family: 'JetBrains Mono', monospace;
+            line-height: 1.5;
+        }
+        
+        .obfuscation-option {
+            transition: all 0.2s ease-in-out;
+        }
+        
+        .toggle-switch {
+            appearance: none;
+            width: 44px;
+            height: 24px;
+            background: hsl(217 33% 17%);
+            border-radius: 50px;
+            position: relative;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+        }
+        
+        .toggle-switch:checked {
+            background: hsl(262 83% 68%);
+        }
+        
+        .toggle-switch::before {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: white;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.2s ease-in-out;
+        }
+        
+        .toggle-switch:checked::before {
+            transform: translateX(20px);
+        }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, hsl(262 83% 68%) 0%, hsl(280 100% 80%) 100%);
+            animation: progress-shine 2s ease-in-out infinite;
+        }
+        
+        @keyframes progress-shine {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        .syntax-highlight {
+            background: linear-gradient(135deg, hsl(262 83% 68% / 0.1) 0%, hsl(280 100% 80% / 0.1) 100%);
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body class="bg-background text-foreground font-sans">
+    <!-- @COMPONENT: MainLayout -->
+    <div class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <!-- @COMPONENT: Header -->
+        <header class="bg-card border-b border-border px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                        <i class="fas fa-shield-alt text-primary-foreground text-sm"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-foreground">Luau Obfuscator</h1>
+                        <p class="text-sm text-muted-foreground">Advanced Roblox Script Protection</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="hidden md:flex items-center space-x-2 text-sm text-muted-foreground">
+                        <i class="fas fa-code"></i>
+                        <span data-bind="stats.linesProcessed" data-mock="true">2,847 lines processed</span>
+                    </div>
+                    <button class="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                            data-event="click:showHelp">
+                        <i class="fas fa-question-circle mr-2"></i>Help
+                    </button>
+                </div>
+            </div>
+        </header>
+        <!-- @END_COMPONENT: Header -->
+
+        <!-- Main Content -->
+        <div class="flex-1 flex">
+            <!-- Sidebar - Obfuscation Options -->
+            <!-- @COMPONENT: ObfuscationSidebar -->
+            <aside class="w-80 bg-card border-r border-border overflow-y-auto">
+                <div class="p-6">
+                    <div class="mb-6">
+                        <h2 class="text-lg font-semibold mb-4 text-foreground">Obfuscation Settings</h2>
+                        
+                        <!-- Preset Selection -->
+                        <div class="mb-6">
+                            <label class="text-sm font-medium text-foreground mb-2 block">Preset Level</label>
+                            <select class="w-full bg-input border border-border rounded-md px-3 py-2 text-foreground text-sm"
+                                    data-bind="settings.presetLevel" data-event="change:handlePresetChange">
+                                <option value="light" data-mock="true">Light Protection</option>
+                                <option value="medium" selected data-mock="true">Medium Protection</option>
+                                <option value="heavy" data-mock="true">Heavy Protection</option>
+                                <option value="extreme" data-mock="true">Extreme Protection</option>
+                                <option value="custom" data-mock="true">Custom Settings</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Variable Obfuscation -->
+                    <div class="mb-6 p-4 bg-muted/50 rounded-lg">
+                        <h3 class="font-medium text-foreground mb-3 flex items-center">
+                            <i class="fas fa-variable mr-2 text-primary"></i>
+                            Variable Obfuscation
+                        </h3>
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-foreground">Rename Variables</span>
+                                <input type="checkbox" class="toggle-switch" checked data-bind="settings.renameVariables">
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-foreground">Random Name Length</span>
+                                <div class="flex items-center space-x-2">
+                                    <input type="range" min="3" max="20" value="8" class="slider" data-bind="settings.nameLength">
+                                    <span class="text-xs text-muted-foreground w-6" data-bind="settings.nameLength" data-mock="true">8</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-foreground">Use Confusing Names</span>
+                                <input type="checkbox" class="toggle-switch" data-bind="settings.confusingNames">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- String Obfuscation -->
+                    <div class="mb-6 p-4 bg-muted/50 rounded-lg">
+                        <h3 class="font-medium text-foreground mb-3 flex items-center">
+                            <i class="fas fa-quote-right mr-2 text-primary"></i>
+                            String Obfuscation
+                        </h3>
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-foreground">Encrypt Strings</span>
+                                <input type="checkbox" class="toggle-switch" checked data-bind="settings.encryptStrings">
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-foreground">Split Strings</span>
+                                <input type="checkbox" class="toggle-switch" checked data-bind="settings.splitStrings">
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-foreground">Base64 Encoding</span>
+                                <input type="checkbox" class="toggle-switch" data-bind="settings.base64Encoding">
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-foreground">Unicode Escape</span>
+                                <input type="checkbox" class="toggle-switch" data-bind="settings.unicodeEscape">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Control Flow -->
+                    <div class="mb-6 p-4 bg-muted/50 rounded-lg">
+                        <h3 class="font-medium text-foreground mb-3 flex items-center">
+                            <i class="fas fa-route mr-2 text-primary"></i>
+                            Control Flow
+                        </h3>
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-foreground">Add Dummy Conditions</span>
+                                <input type="checkbox" class="toggle-switch" checked data-bind="settings.dummyConditions">
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-foreground">Insert Dead Code</span>
+                                <input type="checkbox" class="toggle-switch" data-bind="settings.deadCode">
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-foreground">Opaque Predicates</span>
+                                <input type="checkbox" class="toggle-switch" data-bind="settings.opaquePredicates">
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-foreground">Control Flow Flattening</span>
+                                <input type="checkbox" class="toggle-switch" data-bind="settings.controlFlowFlattening">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Advanced Options -->
+                    <div class="mb-6 p-4 bg-muted/50 rounded-lg">
+                        <h3 class="font-medium text-foreground mb-3 flex items-center">
+                            <i class="fas fa-cogs mr-2 text-primary"></i>
+                            Advanced Options
+                        </h3>
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-foreground">Anti-Debugging</span>
+                                <input type="checkbox" class="toggle-switch" data-bind="settings.antiDebugging">
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-foreground">Function Inlining</span>
+                                <input type="checkbox" class="toggle-switch" checked data-bind="settings.functionInlining">
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-foreground">Constant Folding</span>
+                                <input type="checkbox" class="toggle-switch" data-bind="settings.constantFolding">
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-foreground">Remove Comments</span>
+                                <input type="checkbox" class="toggle-switch" checked data-bind="settings.removeComments">
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-foreground">Minify Whitespace</span>
+                                <input type="checkbox" class="toggle-switch" checked data-bind="settings.minifyWhitespace">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Obfuscation Strength -->
+                    <div class="mb-6">
+                        <label class="text-sm font-medium text-foreground mb-2 block">Obfuscation Strength</label>
+                        <div class="px-2">
+                            <input type="range" min="1" max="10" value="7" 
+                                   class="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer"
+                                   style="background: linear-gradient(to right, hsl(262 83% 68%) 0%, hsl(262 83% 68%) 70%, hsl(217 33% 17%) 70%, hsl(217 33% 17%) 100%);"
+                                   data-bind="settings.strength">
+                            <div class="flex justify-between text-xs text-muted-foreground mt-1">
+                                <span>Minimal</span>
+                                <span>Maximum</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="space-y-3">
+                        <button class="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-3 rounded-md font-medium transition-colors flex items-center justify-center"
+                                data-event="click:startObfuscation" data-implementation="Should validate input and start obfuscation process">
+                            <i class="fas fa-play mr-2"></i>
+                            Obfuscate Code
+                        </button>
+                        <button class="w-full bg-secondary hover:bg-secondary/80 text-secondary-foreground py-2 rounded-md font-medium transition-colors"
+                                data-event="click:resetSettings">
+                            <i class="fas fa-undo mr-2"></i>
+                            Reset Settings
+                        </button>
+                    </div>
+                </div>
+            </aside>
+            <!-- @END_COMPONENT: ObfuscationSidebar -->
+
+            <!-- Main Content Area -->
+            <main class="flex-1 flex">
+                <!-- Input Panel -->
+                <!-- @COMPONENT: CodeInput -->
+                <section class="flex-1 flex flex-col">
+                    <div class="bg-card border-b border-border px-6 py-3 flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <h2 class="font-medium text-foreground">Input Code</h2>
+                            <span class="text-xs bg-muted text-muted-foreground px-2 py-1 rounded">Luau</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button class="text-muted-foreground hover:text-foreground p-1 rounded"
+                                    data-event="click:clearInput" title="Clear Input">
+                                <i class="fas fa-trash text-sm"></i>
+                            </button>
+                            <button class="text-muted-foreground hover:text-foreground p-1 rounded"
+                                    data-event="click:loadExample" title="Load Example">
+                                <i class="fas fa-file-code text-sm"></i>
+                            </button>
+                            <span class="text-xs text-muted-foreground" data-bind="inputStats.lines" data-mock="true">42 lines</span>
+                        </div>
+                    </div>
+                    <div class="flex-1 p-6">
+                        <textarea 
+                            class="w-full h-full bg-input border border-border rounded-lg p-4 text-foreground code-editor resize-none focus:outline-none focus:ring-2 focus:ring-ring text-sm"
+                            placeholder="-- Paste your Luau/Roblox code here
+local Players = game:GetService('Players')
+local player = Players.LocalPlayer
+
+function greetPlayer()
+    print('Hello, ' .. player.Name .. '!')
+end
+
+greetPlayer()"
+                            data-bind="inputCode" 
+                            data-event="input:handleCodeInput"
+                            data-implementation="Should provide syntax highlighting and validation">
+                        </textarea>
+                    </div>
+                </section>
+                <!-- @END_COMPONENT: CodeInput -->
+
+                <!-- Output Panel -->
+                <!-- @COMPONENT: CodeOutput -->
+                <section class="flex-1 flex flex-col border-l border-border">
+                    <div class="bg-card border-b border-border px-6 py-3 flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <h2 class="font-medium text-foreground">Obfuscated Output</h2>
+                            <span class="text-xs bg-destructive/20 text-destructive px-2 py-1 rounded">Protected</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button class="bg-primary hover:bg-primary/90 text-primary-foreground px-3 py-1.5 rounded text-sm font-medium transition-colors"
+                                    data-event="click:copyOutput" data-implementation="Should copy obfuscated code to clipboard">
+                                <i class="fas fa-copy mr-1"></i>Copy
+                            </button>
+                            <button class="text-muted-foreground hover:text-foreground p-1 rounded"
+                                    data-event="click:downloadOutput" title="Download as .lua file">
+                                <i class="fas fa-download text-sm"></i>
+                            </button>
+                            <span class="text-xs text-muted-foreground" data-bind="outputStats.compressionRatio" data-mock="true">+234% size</span>
+                        </div>
+                    </div>
+
+                    <!-- Processing Status -->
+                    <div class="px-6 py-2 bg-accent/30 border-b border-border hidden" data-state="processing">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-4 h-4">
+                                <div class="w-full h-1 bg-muted rounded overflow-hidden">
+                                    <div class="h-full progress-bar" style="width: 65%"></div>
+                                </div>
+                            </div>
+                            <span class="text-sm text-foreground">Obfuscating code... <span data-bind="progress.percentage" data-mock="true">65%</span></span>
+                        </div>
+                    </div>
+
+                    <div class="flex-1 p-6">
+                        <div class="relative h-full">
+                            <textarea 
+                                class="w-full h-full bg-input border border-border rounded-lg p-4 text-foreground code-editor resize-none focus:outline-none focus:ring-2 focus:ring-ring text-sm"
+                                readonly
+                                placeholder="Obfuscated code will appear here..."
+                                data-bind="outputCode"
+                                data-mock="true">-- Obfuscated output will appear here after processing
+local _0x4a2b3c = game:GetService('\x50\x6c\x61\x79\x65\x72\x73')
+local _0x8f9d1e = _0x4a2b3c.LocalPlayer
+local function _0x3e7f2a()
+    if true then
+        if 1 == 1 then
+            print('\x48\x65\x6c\x6c\x6f\x2c\x20' .. _0x8f9d1e.Name .. '\x21')
+        end
+    end
+end
+_0x3e7f2a()</textarea>
+
+                            <!-- Overlay for empty state -->
+                            <div class="absolute inset-0 flex items-center justify-center text-muted-foreground" data-state="empty">
+                                <div class="text-center">
+                                    <i class="fas fa-code text-4xl mb-3 opacity-50"></i>
+                                    <p class="text-lg font-medium">Ready to Obfuscate</p>
+                                    <p class="text-sm">Paste your code and click "Obfuscate Code"</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <!-- @END_COMPONENT: CodeOutput -->
+            </main>
+        </div>
+
+        <!-- Bottom Status Bar -->
+        <!-- @COMPONENT: StatusBar -->
+        <footer class="bg-card border-t border-border px-6 py-3">
+            <div class="flex items-center justify-between text-sm">
+                <div class="flex items-center space-x-6">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <span class="text-muted-foreground">Ready</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-clock text-muted-foreground"></i>
+                        <span class="text-muted-foreground" data-bind="performance.lastProcessTime" data-mock="true">Last process: 0.8s</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-shield-alt text-muted-foreground"></i>
+                        <span class="text-muted-foreground" data-bind="stats.protectionLevel" data-mock="true">Protection: 87%</span>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="text-muted-foreground">
+                        <span data-bind="stats.totalObfuscated" data-mock="true">1,247</span> scripts protected
+                    </div>
+                    <button class="text-muted-foreground hover:text-foreground"
+                            data-event="click:showAbout">
+                        <i class="fas fa-info-circle"></i>
+                    </button>
+                </div>
+            </div>
+        </footer>
+        <!-- @END_COMPONENT: StatusBar -->
+    </div>
+    <!-- @END_COMPONENT: MainLayout -->
+
+    <!-- Toast Notifications -->
+    <!-- @COMPONENT: ToastContainer -->
+    <div class="fixed top-4 right-4 z-50 space-y-2" data-state="toasts">
+        <!-- Success Toast (hidden by default) -->
+        <div class="bg-card border border-border shadow-lg rounded-lg p-4 flex items-center space-x-3 max-w-sm hidden" data-toast="success">
+            <div class="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                <i class="fas fa-check text-white text-xs"></i>
+            </div>
+            <div class="flex-1">
+                <p class="text-sm font-medium text-foreground">Code Obfuscated Successfully</p>
+                <p class="text-xs text-muted-foreground">Ready to copy to clipboard</p>
+            </div>
+            <button class="text-muted-foreground hover:text-foreground" data-event="click:dismissToast">
+                <i class="fas fa-times text-sm"></i>
+            </button>
+        </div>
+
+        <!-- Error Toast (hidden by default) -->
+        <div class="bg-card border border-destructive shadow-lg rounded-lg p-4 flex items-center space-x-3 max-w-sm hidden" data-toast="error">
+            <div class="w-5 h-5 bg-destructive rounded-full flex items-center justify-center">
+                <i class="fas fa-exclamation-triangle text-destructive-foreground text-xs"></i>
+            </div>
+            <div class="flex-1">
+                <p class="text-sm font-medium text-foreground">Syntax Error Detected</p>
+                <p class="text-xs text-muted-foreground">Please check your code syntax</p>
+            </div>
+            <button class="text-muted-foreground hover:text-foreground" data-event="click:dismissToast">
+                <i class="fas fa-times text-sm"></i>
+            </button>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: ToastContainer -->
+
+    <!-- Help Modal (hidden by default) -->
+    <!-- @COMPONENT: HelpModal -->
+    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden" data-modal="help">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-card border border-border rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+                <div class="p-6 border-b border-border">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-xl font-bold text-foreground">Obfuscation Guide</h2>
+                        <button class="text-muted-foreground hover:text-foreground" data-event="click:closeHelp">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="p-6 space-y-6">
+                    <div>
+                        <h3 class="font-semibold text-foreground mb-2">What is Code Obfuscation?</h3>
+                        <p class="text-muted-foreground text-sm">Code obfuscation transforms your readable code into a functionally equivalent but hard-to-understand version, protecting your intellectual property while maintaining full functionality.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-foreground mb-2">Obfuscation Techniques</h3>
+                        <ul class="space-y-2 text-sm text-muted-foreground">
+                            <li class="flex items-start space-x-2">
+                                <i class="fas fa-chevron-right text-primary text-xs mt-1"></i>
+                                <span><strong>Variable Renaming:</strong> Replaces meaningful variable names with random strings</span>
+                            </li>
+                            <li class="flex items-start space-x-2">
+                                <i class="fas fa-chevron-right text-primary text-xs mt-1"></i>
+                                <span><strong>String Encryption:</strong> Encodes string literals to hide sensitive information</span>
+                            </li>
+                            <li class="flex items-start space-x-2">
+                                <i class="fas fa-chevron-right text-primary text-xs mt-1"></i>
+                                <span><strong>Control Flow Obfuscation:</strong> Adds fake conditions and loops to confuse analysis</span>
+                            </li>
+                            <li class="flex items-start space-x-2">
+                                <i class="fas fa-chevron-right text-primary text-xs mt-1"></i>
+                                <span><strong>Dead Code Insertion:</strong> Adds non-functional code that never executes</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-foreground mb-2">Best Practices</h3>
+                        <ul class="space-y-1 text-sm text-muted-foreground">
+                            <li>• Test obfuscated code thoroughly before deployment</li>
+                            <li>• Keep original code backed up safely</li>
+                            <li>• Use medium protection for most scripts</li>
+                            <li>• Heavy protection may impact performance</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: HelpModal -->
+
+    <!-- Mobile Sidebar Toggle (hidden on desktop) -->
+    <button class="lg:hidden fixed bottom-6 left-6 bg-primary hover:bg-primary/90 text-primary-foreground w-12 h-12 rounded-full shadow-lg flex items-center justify-center z-40"
+            data-event="click:toggleMobileSidebar" data-implementation="Should toggle sidebar visibility on mobile">
+        <i class="fas fa-sliders-h"></i>
+    </button>
+
+    <script>
+        // TODO: Implement obfuscation logic, state management, and API integration
+        
+        (function() {
+            // Initialize application state
+            const appState = {
+                inputCode: '',
+                outputCode: '',
+                isProcessing: false,
+                settings: {
+                    presetLevel: 'medium',
+                    renameVariables: true,
+                    nameLength: 8,
+                    confusingNames: false,
+                    encryptStrings: true,
+                    splitStrings: true,
+                    base64Encoding: false,
+                    unicodeEscape: false,
+                    dummyConditions: true,
+                    deadCode: false,
+                    opaquePredicates: false,
+                    controlFlowFlattening: false,
+                    antiDebugging: false,
+                    functionInlining: true,
+                    constantFolding: false,
+                    removeComments: true,
+                    minifyWhitespace: true,
+                    strength: 7
+                },
+                stats: {
+                    linesProcessed: 2847,
+                    totalObfuscated: 1247,
+                    protectionLevel: 87
+                }
+            };
+
+            // Mockup interaction handlers
+            function handleObfuscation() {
+                // TODO: Implement actual obfuscation logic
+                console.log('Starting obfuscation with settings:', appState.settings);
+                
+                // Simulate processing
+                const processingIndicator = document.querySelector('[data-state="processing"]');
+                if (processingIndicator) {
+                    processingIndicator.classList.remove('hidden');
+                }
+                
+                setTimeout(() => {
+                    if (processingIndicator) {
+                        processingIndicator.classList.add('hidden');
+                    }
+                    showToast('success');
+                }, 2000);
+            }
+
+            function showToast(type) {
+                const toast = document.querySelector(`[data-toast="${type}"]`);
+                if (toast) {
+                    toast.classList.remove('hidden');
+                    setTimeout(() => {
+                        toast.classList.add('hidden');
+                    }, 4000);
+                }
+            }
+
+            function handleCopyOutput() {
+                // TODO: Implement clipboard functionality
+                console.log('Copying output to clipboard');
+                showToast('success');
+            }
+
+            function toggleModal(modalName, show = true) {
+                const modal = document.querySelector(`[data-modal="${modalName}"]`);
+                if (modal) {
+                    if (show) {
+                        modal.classList.remove('hidden');
+                    } else {
+                        modal.classList.add('hidden');
+                    }
+                }
+            }
+
+            // Event listeners
+            document.addEventListener('click', function(e) {
+                const element = e.target.closest('[data-event]');
+                if (!element) return;
+
+                const event = element.getAttribute('data-event');
+                
+                switch(event) {
+                    case 'click:startObfuscation':
+                        handleObfuscation();
+                        break;
+                    case 'click:copyOutput':
+                        handleCopyOutput();
+                        break;
+                    case 'click:showHelp':
+                        toggleModal('help', true);
+                        break;
+                    case 'click:closeHelp':
+                        toggleModal('help', false);
+                        break;
+                    case 'click:dismissToast':
+                        e.target.closest('[data-toast]').classList.add('hidden');
+                        break;
+                    case 'click:resetSettings':
+                        console.log('Resetting settings to defaults');
+                        break;
+                    case 'click:clearInput':
+                        document.querySelector('[data-bind="inputCode"]').value = '';
+                        break;
+                    case 'click:loadExample':
+                        console.log('Loading example code');
+                        break;
+                }
+            });
+
+            // Close modal when clicking outside
+            document.addEventListener('click', function(e) {
+                if (e.target.matches('[data-modal]')) {
+                    e.target.classList.add('hidden');
+                }
+            });
+
+            // Handle settings changes
+            document.addEventListener('change', function(e) {
+                if (e.target.matches('[data-bind]')) {
+                    const binding = e.target.getAttribute('data-bind');
+                    console.log(`Setting ${binding} changed to:`, e.target.value || e.target.checked);
+                }
+            });
+
+            // Initialize tooltips and interactive elements
+            console.log('Luau Obfuscator initialized');
+        })();
+    </script>
+</body>
+</html>

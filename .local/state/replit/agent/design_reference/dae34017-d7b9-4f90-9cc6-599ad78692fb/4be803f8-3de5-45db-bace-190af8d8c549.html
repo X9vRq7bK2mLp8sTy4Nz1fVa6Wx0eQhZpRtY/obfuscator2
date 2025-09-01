@@ -1,0 +1,675 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luau Obfuscator Pro - Advanced Code Protection</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                borderRadius: {
+                    lg: "var(--radius)",
+                    md: "calc(var(--radius) - 2px)",
+                    sm: "calc(var(--radius) - 4px)",
+                },
+                colors: {
+                    background: "var(--background)",
+                    foreground: "var(--foreground)",
+                    card: {
+                        DEFAULT: "var(--card)",
+                        foreground: "var(--card-foreground)",
+                    },
+                    popover: {
+                        DEFAULT: "var(--popover)",
+                        foreground: "var(--popover-foreground)",
+                    },
+                    primary: {
+                        DEFAULT: "var(--primary)",
+                        foreground: "var(--primary-foreground)",
+                    },
+                    secondary: {
+                        DEFAULT: "var(--secondary)",
+                        foreground: "var(--secondary-foreground)",
+                    },
+                    muted: {
+                        DEFAULT: "var(--muted)",
+                        foreground: "var(--muted-foreground)",
+                    },
+                    accent: {
+                        DEFAULT: "var(--accent)",
+                        foreground: "var(--accent-foreground)",
+                    },
+                    destructive: {
+                        DEFAULT: "var(--destructive)",
+                        foreground: "var(--destructive-foreground)",
+                    },
+                    border: "var(--border)",
+                    input: "var(--input)",
+                    ring: "var(--ring)",
+                },
+                fontFamily: {
+                    sans: ["Inter", "ui-sans-serif", "system-ui"],
+                    mono: ["JetBrains Mono", "ui-monospace", "SFMono-Regular"],
+                }
+            },
+        }
+    };
+    </script>
+    <style>
+        :root {
+            --background: hsl(222 84% 5%);
+            --foreground: hsl(210 40% 98%);
+            --card: hsl(222 84% 8%);
+            --card-foreground: hsl(210 40% 98%);
+            --popover: hsl(222 84% 8%);
+            --popover-foreground: hsl(210 40% 98%);
+            --primary: hsl(187 85% 53%);
+            --primary-foreground: hsl(222 84% 5%);
+            --secondary: hsl(217 32% 17%);
+            --secondary-foreground: hsl(210 40% 98%);
+            --muted: hsl(217 32% 17%);
+            --muted-foreground: hsl(215 20% 65%);
+            --accent: hsl(142 76% 36%);
+            --accent-foreground: hsl(210 40% 98%);
+            --destructive: hsl(0 62% 30%);
+            --destructive-foreground: hsl(210 40% 98%);
+            --border: hsl(217 32% 17%);
+            --input: hsl(217 32% 17%);
+            --ring: hsl(187 85% 53%);
+            --radius: 8px;
+        }
+        
+        .code-editor {
+            font-family: 'JetBrains Mono', monospace;
+            line-height: 1.5;
+        }
+        
+        .options-panel {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-in-out;
+        }
+        
+        .options-panel.expanded {
+            max-height: 1000px;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 48px;
+            height: 24px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: hsl(217 32% 17%);
+            transition: .3s;
+            border-radius: 24px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: hsl(215 20% 65%);
+            transition: .3s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: hsl(187 85% 53%);
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(24px);
+            background-color: hsl(222 84% 5%);
+        }
+        
+        .progress-bar {
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-background text-foreground min-h-screen">
+    <!-- @COMPONENT: Header -->
+    <header class="bg-card border-b border-border sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                        <i class="fas fa-shield-alt text-primary-foreground text-sm"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-bold text-foreground">Luau Obfuscator Pro</h1>
+                        <p class="text-xs text-muted-foreground">Advanced Code Protection</p>
+                    </div>
+                </div>
+                <button class="w-10 h-10 bg-secondary rounded-lg flex items-center justify-center hover:bg-accent transition-colors">
+                    <i class="fas fa-cog text-muted-foreground"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+    <!-- @END_COMPONENT: Header -->
+
+    <!-- @COMPONENT: MainContainer -->
+    <main class="container mx-auto px-4 py-6 space-y-6">
+        
+        <!-- @COMPONENT: QuickActions -->
+        <div class="bg-card rounded-lg border border-border p-4">
+            <div class="flex flex-wrap gap-3">
+                <button class="flex-1 min-w-0 bg-primary text-primary-foreground rounded-lg py-3 px-4 font-medium flex items-center justify-center space-x-2 hover:opacity-90 transition-opacity">
+                    <i class="fas fa-magic"></i>
+                    <span>Quick Obfuscate</span>
+                </button>
+                <button id="optionsToggle" class="flex-1 min-w-0 bg-secondary text-secondary-foreground rounded-lg py-3 px-4 font-medium flex items-center justify-center space-x-2 hover:bg-accent hover:text-accent-foreground transition-colors">
+                    <i class="fas fa-sliders-h"></i>
+                    <span>Advanced Options</span>
+                </button>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: QuickActions -->
+
+        <!-- @COMPONENT: AdvancedOptions -->
+        <div id="optionsPanel" class="options-panel bg-card rounded-lg border border-border">
+            <div class="p-4 space-y-6">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-foreground">Obfuscation Settings</h3>
+                    <span class="text-sm text-muted-foreground">15+ Advanced Options</span>
+                </div>
+
+                <!-- Preset Selection -->
+                <div class="space-y-3">
+                    <label class="text-sm font-medium text-foreground">Obfuscation Preset</label>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <button class="bg-secondary text-secondary-foreground rounded-lg py-3 px-4 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors">
+                            <i class="fas fa-feather mr-2"></i>Light
+                        </button>
+                        <button class="bg-accent text-accent-foreground rounded-lg py-3 px-4 text-sm font-medium">
+                            <i class="fas fa-shield mr-2"></i>Standard
+                        </button>
+                        <button class="bg-secondary text-secondary-foreground rounded-lg py-3 px-4 text-sm font-medium hover:bg-destructive hover:text-destructive-foreground transition-colors">
+                            <i class="fas fa-skull mr-2"></i>Signature
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Variable & Function Obfuscation -->
+                <div class="space-y-4">
+                    <h4 class="text-md font-medium text-foreground border-b border-border pb-2">Variable & Function Protection</h4>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-foreground">Variable Name Scrambling</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked data-mock="true">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-foreground">Function Wrapping</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked data-mock="true">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-foreground">Indirect Function Calls</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" data-mock="true">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-foreground">Custom Name Patterns</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked data-mock="true">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-sm font-medium text-foreground">Variable Complexity</label>
+                        <input type="range" min="1" max="10" value="7" class="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer">
+                        <div class="flex justify-between text-xs text-muted-foreground">
+                            <span>Simple</span>
+                            <span>Complex</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- String & Constant Protection -->
+                <div class="space-y-4">
+                    <h4 class="text-md font-medium text-foreground border-b border-border pb-2">String & Constant Protection</h4>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-foreground">String Encryption</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked data-mock="true">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-foreground">Base64 Encoding</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked data-mock="true">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-foreground">Hex Encoding</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" data-mock="true">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-foreground">Mathematical Expressions</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked data-mock="true">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-sm font-medium text-foreground">String Concealment Level</label>
+                        <input type="range" min="1" max="5" value="3" class="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer">
+                        <div class="flex justify-between text-xs text-muted-foreground">
+                            <span>Basic</span>
+                            <span>Advanced</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Control Flow & Structure -->
+                <div class="space-y-4">
+                    <h4 class="text-md font-medium text-foreground border-b border-border pb-2">Control Flow & Structure</h4>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-foreground">Dead Code Injection</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked data-mock="true">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-foreground">Control Flow Flattening</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" data-mock="true">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-foreground">Code Splitting</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked data-mock="true">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-foreground">Syntax Tree Manipulation</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" data-mock="true">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Anti-Analysis Protection -->
+                <div class="space-y-4">
+                    <h4 class="text-md font-medium text-foreground border-b border-border pb-2">Anti-Analysis Protection</h4>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-foreground">Anti-Debugging</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked data-mock="true">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-foreground">Dynamic Evaluation</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" data-mock="true">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-foreground">Watermarking</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked data-mock="true">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-foreground">Signature Embedding</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" data-mock="true">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Performance & Compatibility -->
+                <div class="space-y-4">
+                    <h4 class="text-md font-medium text-foreground border-b border-border pb-2">Performance & Compatibility</h4>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-foreground">Preserve Comments</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" data-mock="true">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-foreground">Optimize Performance</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked data-mock="true">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-sm font-medium text-foreground">Processing Intensity</label>
+                        <input type="range" min="1" max="10" value="6" class="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer">
+                        <div class="flex justify-between text-xs text-muted-foreground">
+                            <span>Fast</span>
+                            <span>Maximum</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: AdvancedOptions -->
+
+        <!-- @COMPONENT: CodeEditor -->
+        <div class="space-y-4">
+            <!-- Input Section -->
+            <div class="bg-card rounded-lg border border-border">
+                <div class="flex items-center justify-between p-4 border-b border-border">
+                    <div class="flex items-center space-x-3">
+                        <h3 class="text-md font-semibold text-foreground">Input Code</h3>
+                        <span class="text-xs text-muted-foreground bg-secondary px-2 py-1 rounded">Luau</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button class="w-8 h-8 bg-secondary rounded-md flex items-center justify-center hover:bg-accent transition-colors" title="Paste from clipboard">
+                            <i class="fas fa-clipboard text-xs text-muted-foreground"></i>
+                        </button>
+                        <button class="w-8 h-8 bg-secondary rounded-md flex items-center justify-center hover:bg-accent transition-colors" title="Clear">
+                            <i class="fas fa-trash text-xs text-muted-foreground"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="p-4">
+                    <textarea 
+                        class="w-full h-[300px] bg-input border border-border rounded-md p-4 text-sm code-editor text-foreground placeholder-muted-foreground resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+                        placeholder="-- Paste your Luau code here
+local function greetPlayer(player)
+    print('Hello, ' .. player.Name .. '!')
+    return true
+end
+
+game.Players.PlayerAdded:Connect(greetPlayer)"
+                        data-mock="true"
+                    ></textarea>
+                </div>
+            </div>
+
+            <!-- Processing Status -->
+            <div id="processingStatus" class="bg-card rounded-lg border border-border p-4 hidden">
+                <div class="flex items-center space-x-3">
+                    <div class="w-4 h-4 bg-primary rounded-full animate-pulse"></div>
+                    <span class="text-sm text-foreground">Processing obfuscation...</span>
+                    <span class="text-xs text-muted-foreground ml-auto">85%</span>
+                </div>
+                <div class="mt-3 w-full bg-secondary rounded-full h-2">
+                    <div class="bg-primary h-2 rounded-full progress-bar" style="width: 85%"></div>
+                </div>
+            </div>
+
+            <!-- Output Section -->
+            <div class="bg-card rounded-lg border border-border">
+                <div class="flex items-center justify-between p-4 border-b border-border">
+                    <div class="flex items-center space-x-3">
+                        <h3 class="text-md font-semibold text-foreground">Obfuscated Output</h3>
+                        <span class="text-xs text-accent-foreground bg-accent px-2 py-1 rounded">Protected</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button class="w-8 h-8 bg-secondary rounded-md flex items-center justify-center hover:bg-accent transition-colors" title="Copy to clipboard">
+                            <i class="fas fa-copy text-xs text-muted-foreground"></i>
+                        </button>
+                        <button class="w-8 h-8 bg-secondary rounded-md flex items-center justify-center hover:bg-accent transition-colors" title="Download">
+                            <i class="fas fa-download text-xs text-muted-foreground"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="p-4">
+                    <textarea 
+                        class="w-full h-[300px] bg-input border border-border rounded-md p-4 text-sm code-editor text-foreground resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+                        readonly
+                        placeholder="Obfuscated code will appear here..."
+                        data-mock="true"
+                    >local _0x1a2b3c={["\x67\x72\x65\x65\x74\x50\x6c\x61\x79\x65\x72"]=function(_0x4d5e6f)local _0x7g8h9i="\x48\x65\x6c\x6c\x6f\x2c\x20".._0x4d5e6f["\x4e\x61\x6d\x65"].."\x21"print(_0x7g8h9i)return(function()return true end)()end}game["\x50\x6c\x61\x79\x65\x72\x73"]["\x50\x6c\x61\x79\x65\x72\x41\x64\x64\x65\x64"]:Connect(_0x1a2b3c["\x67\x72\x65\x65\x74\x50\x6c\x61\x79\x65\x72"])</textarea>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: CodeEditor -->
+
+        <!-- @COMPONENT: Statistics -->
+        <div class="bg-card rounded-lg border border-border p-4">
+            <h3 class="text-md font-semibold text-foreground mb-4">Obfuscation Statistics</h3>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-primary" data-bind="stats.complexity">87%</div>
+                    <div class="text-xs text-muted-foreground">Complexity</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-accent" data-bind="stats.protection">94%</div>
+                    <div class="text-xs text-muted-foreground">Protection</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-foreground" data-bind="stats.size">1.3x</div>
+                    <div class="text-xs text-muted-foreground">Size Increase</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-muted-foreground" data-bind="stats.time">0.8s</div>
+                    <div class="text-xs text-muted-foreground">Process Time</div>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: Statistics -->
+
+        <!-- @COMPONENT: HistoryPanel -->
+        <div class="bg-card rounded-lg border border-border p-4">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-md font-semibold text-foreground">Recent Sessions</h3>
+                <button class="text-sm text-primary hover:text-primary/80 transition-colors">Clear History</button>
+            </div>
+            <div class="space-y-3">
+                <!-- @MAP: recentSessions.map(session => ( -->
+                <div class="flex items-center justify-between p-3 bg-secondary rounded-lg">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-accent rounded-lg flex items-center justify-center">
+                            <i class="fas fa-file-code text-xs text-accent-foreground"></i>
+                        </div>
+                        <div>
+                            <div class="text-sm font-medium text-foreground" data-bind="session.name">Player Manager Script</div>
+                            <div class="text-xs text-muted-foreground" data-bind="session.time">2 minutes ago</div>
+                        </div>
+                    </div>
+                    <button class="w-8 h-8 bg-card rounded-md flex items-center justify-center hover:bg-accent transition-colors">
+                        <i class="fas fa-arrow-right text-xs text-muted-foreground"></i>
+                    </button>
+                </div>
+                <!-- @END_MAP )) -->
+                
+                <div class="flex items-center justify-between p-3 bg-secondary rounded-lg">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                            <i class="fas fa-file-code text-xs text-primary-foreground"></i>
+                        </div>
+                        <div>
+                            <div class="text-sm font-medium text-foreground">GUI Framework</div>
+                            <div class="text-xs text-muted-foreground">1 hour ago</div>
+                        </div>
+                    </div>
+                    <button class="w-8 h-8 bg-card rounded-md flex items-center justify-center hover:bg-accent transition-colors">
+                        <i class="fas fa-arrow-right text-xs text-muted-foreground"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: HistoryPanel -->
+
+    </main>
+    <!-- @END_COMPONENT: MainContainer -->
+
+    <!-- @COMPONENT: FloatingActionButton -->
+    <div class="fixed bottom-6 right-6">
+        <button class="w-14 h-14 bg-primary text-primary-foreground rounded-full shadow-lg flex items-center justify-center hover:scale-105 transition-transform">
+            <i class="fas fa-play text-lg"></i>
+        </button>
+    </div>
+    <!-- @END_COMPONENT: FloatingActionButton -->
+
+    <script>
+        // TODO: Implement real obfuscation logic, API calls, and state management
+        (function() {
+            // Options panel toggle functionality
+            const optionsToggle = document.getElementById('optionsToggle');
+            const optionsPanel = document.getElementById('optionsPanel');
+            
+            optionsToggle.addEventListener('click', function() {
+                optionsPanel.classList.toggle('expanded');
+                const icon = optionsToggle.querySelector('i');
+                if (optionsPanel.classList.contains('expanded')) {
+                    icon.className = 'fas fa-chevron-up';
+                } else {
+                    icon.className = 'fas fa-sliders-h';
+                }
+            });
+
+            // Simulated obfuscation processing
+            let isProcessing = false;
+            const inputTextarea = document.querySelector('textarea[placeholder*="Paste your Luau code"]');
+            const outputTextarea = document.querySelector('textarea[readonly]');
+            const processingStatus = document.getElementById('processingStatus');
+
+            function simulateObfuscation() {
+                if (isProcessing) return;
+                
+                isProcessing = true;
+                processingStatus.classList.remove('hidden');
+                
+                // Simulate processing delay
+                setTimeout(() => {
+                    processingStatus.classList.add('hidden');
+                    isProcessing = false;
+                    
+                    // Update output with mock obfuscated code
+                    if (inputTextarea.value.trim()) {
+                        outputTextarea.value = generateMockObfuscatedCode(inputTextarea.value);
+                    }
+                }, 2000);
+            }
+
+            function generateMockObfuscatedCode(input) {
+                // Simple mock obfuscation for demonstration
+                return input
+                    .replace(/local/g, 'local _0x' + Math.random().toString(16).substr(2, 6))
+                    .replace(/function/g, 'function')
+                    .replace(/print/g, 'print')
+                    .replace(/"/g, '"\\x' + Math.random().toString(16).substr(2, 2) + '"');
+            }
+
+            // Debounced processing on input change
+            let debounceTimer;
+            inputTextarea.addEventListener('input', function() {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    if (this.value.trim()) {
+                        simulateObfuscation();
+                    }
+                }, 1000);
+            });
+
+            // Copy to clipboard functionality
+            document.querySelectorAll('[title="Copy to clipboard"]').forEach(button => {
+                button.addEventListener('click', function() {
+                    const textarea = this.closest('.bg-card').querySelector('textarea');
+                    textarea.select();
+                    document.execCommand('copy');
+                    
+                    // Visual feedback
+                    const icon = this.querySelector('i');
+                    const originalClass = icon.className;
+                    icon.className = 'fas fa-check text-xs text-accent';
+                    setTimeout(() => {
+                        icon.className = originalClass;
+                    }, 1500);
+                });
+            });
+
+            // Touch-friendly range slider interaction
+            document.querySelectorAll('input[type="range"]').forEach(slider => {
+                slider.addEventListener('input', function() {
+                    // Add haptic feedback simulation
+                    if (navigator.vibrate) {
+                        navigator.vibrate(10);
+                    }
+                });
+            });
+
+            // Toggle switch interactions
+            document.querySelectorAll('.toggle-switch input').forEach(toggle => {
+                toggle.addEventListener('change', function() {
+                    // Simulate settings change
+                    if (navigator.vibrate) {
+                        navigator.vibrate(20);
+                    }
+                });
+            });
+        })();
+    </script>
+</body>
+</html>
