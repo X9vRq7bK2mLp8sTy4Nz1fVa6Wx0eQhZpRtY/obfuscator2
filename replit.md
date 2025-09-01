@@ -17,11 +17,12 @@ Preferred communication style: Simple, everyday language.
 - **Component Structure**: Feature-based organization with reusable UI components in `/client/src/components`
 
 ## Backend Architecture
-- **Framework**: Express.js with TypeScript running on Node.js
+- **Serverless Functions**: Vercel serverless functions in `/api` directory for scalable deployment
+- **Development Framework**: Express.js with TypeScript for local development
 - **API Design**: RESTful endpoints for obfuscation processing and health checks
 - **Code Processing**: Custom Luau parser and obfuscator service with configurable options
 - **Data Storage**: In-memory storage implementation with interfaces for future database integration
-- **Development Setup**: Hot reload with Vite integration in development mode
+- **Deployment**: Configured for GitHub integration with automatic Vercel deployments
 
 ## Data Storage Solutions
 - **Current Implementation**: In-memory storage using Map data structures for user and session management
@@ -39,7 +40,8 @@ Preferred communication style: Simple, everyday language.
 ### Development and Build Tools
 - **Vite**: Frontend build tool with React plugin and development server
 - **TypeScript**: Type safety across frontend, backend, and shared code
-- **ESBuild**: Backend bundling for production builds
+- **ESBuild**: Backend bundling for production builds (local development)
+- **Vercel**: Serverless deployment platform with automatic scaling
 - **PostCSS**: CSS processing with Tailwind and Autoprefixer
 
 ### UI and Styling
